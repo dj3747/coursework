@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from datetime import datetime
-from http.client import responses
 
 import pandas as pd
 import requests
@@ -10,17 +9,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def greet() -> str:
     """Функция возвращает приветствие в зависимости от текущего времени суток"""
     current_hour = datetime.now().hour
     if 5 <= current_hour < 12:
         return "Доброе утро"
-    elif 12 <= current_hour <18:
+    elif 12 <= current_hour < 18:
         return "Добрый день"
     elif 18 <= current_hour < 23:
         return "Добрый вечер"
     else:
         return "Доброй ночи"
+
 
 def get_data_frame_from_excel_file(excel_file_path: str) -> dict:
     """Загружает данные из Excel файла и возвращает их в виде словаря."""
@@ -38,34 +39,35 @@ def get_data_frame_from_excel_file(excel_file_path: str) -> dict:
 
 def get_cards(transaction: pd.DataFrame) -> list:
     """
-        Функция анализирует список транзакций и возвращает информацию по каждой карте:
-        - последние 4 цифры номера карты;
-        - общая сумма расходов;
-        - кешбэк (1 рубль на каждые 100 рублей).
-        """
+    Функция анализирует список транзакций и возвращает информацию по каждой карте:
+    - последние 4 цифры номера карты;
+    - общая сумма расходов;
+    - кешбэк (1 рубль на каждые 100 рублей).
+    """
     card_data = {}
     for _, row in transaction.iterrows():
         card_number = row["Номер карты"]
         if row["Статус"] == "OK" and row["Сумма операции"] < 0:
-            card_number = str(card_number).replace(" ","")
+            card_number = str(card_number).replace(" ", "")
             last_4_digits = card_number[-4:]
 
             if card_number not in card_data:
-                card_data[card_number] = {"last_4_digits": last_4_digits, "total_spent":0, "cashback": 0}
-                card_number[card_number]["total_spent"] += row["Сумма операции"]
-                card_number[card_number]["cashback"] += row["Сумма операции"] // 100
+                card_data[card_number] = {"last_4_digits": last_4_digits, "total_spent": 0, "cashback": 0}
+                card_data[card_number]["total_spent"] += row["Сумма операции"]
+                card_data[card_number]["cashback"] += row["Сумма операции"] // 100
 
     result = []
     for card_number, card_info in card_data.items():
         result.append(
             {
                 "last_digits": card_info["last_4_digits"],
-                "total_spent": round(card_info[total_spent], 2),
+                "total_spent": round(card_info["total_spent"], 2),
                 "cashback": round(card_info["cashback"], 2),
             }
         )
     print(f"Карты обработаны: {result}")
     return result
+
 
 def get_top_transaction(transactions: pd.DataFrame) -> list:
     """Функция Топ-5 транзакций по сумме платежа"""
@@ -85,14 +87,15 @@ def get_top_transaction(transactions: pd.DataFrame) -> list:
     print(f"Топ транзакций: {top_transactions_list}")
     return top_transactions_list
 
+
 def get_currency_rates(user_setting_path: str) -> list:
     """Функция получает стоимость для валют, указанных в файле настроек пользователя"""
     with open(user_setting_path, "r") as f:
         user_setting = json.load(f)
 
         # Берем только доллар и евро из JSON файла
-        currency = [currency for currency in user_setting.get("user_currencies", []) if currency in ["USD", "EUR"]]
-        logging.info(f"Валюты для обработки: {currency}")
+        currencies = [currency for currency in user_setting.get("user_currencies", []) if currency in ["USD", "EUR"]]
+        logging.info(f"Валюты для обработки: {currencies}")
         api_key = os.getenv("API_KEY")
         currency_rates = []
 
