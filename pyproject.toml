@@ -1,0 +1,49 @@
+[project]
+name = "coursework"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "dj3747",email = "dj94911131@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "openpyxl (>=3.1.5,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-cov = "^6.1.0"
+
+
+[tool.poetry.group.lint.dependencies]
+flake8 = "^7.2.0"
+mypy = "^1.15.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+# файлы, которые не нужно форматировать
+exclude = '''
+(\.venv)
+'''
+[tool.black]
+# максимальная длина строки
+line-length = 119
+# файлы, которые не нужно форматировать
+exclude = '''
+(\.git)
+'''
+[tool.isort]
+multi_line_output = 1
+line_length = 119
