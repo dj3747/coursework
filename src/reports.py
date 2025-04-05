@@ -45,23 +45,20 @@ def log_report_to_file(filename: Optional[str] = None):
 
 
 @log_report_to_file("../data/spending_by_category_report.json")  # Можно передать имя файла
-def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> dict:
+def spending_by_category(transactions: pd.DataFrame, category: str, start_date: str, end_date: str) -> dict:
     """Функция для получения трат по категориям за заданный период"""
     # Создаем копию DataFrame для безопасной модификации
     df = transactions.copy()
 
-    # Определение целевой даты
-    target_date = datetime.now() if date is None else datetime.strptime(date, "%Y-%m-%d")
-
-    # Преобразование дат в DataFrame
-    df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True, errors="coerce")
-
-    # Вычисляем дату 3 месяца назад
-    start_date = target_date - timedelta(days=90)
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
 
     # Фильтруем транзакции по категории и дате
-    mask = (df["Категория"] == category) & (df["Дата операции"] >= start_date)
-    filtered_transactions = df.loc[mask].copy()
+    mask = ((df["Категория"] == category) &
+            (df["Дата операции"] >= start_date) &
+            (df["Дата операции"] <= end_date))
+
+    filtered_transactions = df.loc[mask]
 
     # Возвращаем сумму трат по категориям
     total_spending = float(filtered_transactions["Сумма операции"].sum())
