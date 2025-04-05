@@ -6,10 +6,9 @@ from datetime import datetime
 
 import pandas as pd
 
-from ..config import excel_file_path, user_settings_path
-from src.utils import get_cards, get_currency_rates, get_stock_prices, get_top_transaction, greet
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import excel_file_path, user_settings_path
+from src.utils import get_cards, get_currency_rates, get_stock_prices, get_top_transaction, greet
 
 
 # Настроить логирование
@@ -67,7 +66,7 @@ print(f"Путь к Excel: {excel_file_path}")
 print(f"Путь к настройкам: {user_settings_path}")
 if __name__ == "__main__":
     # Пример вызова функции и вывода результата
-    result = handle_request("2024-01-15 12:00:00")
+    result = handle_request("2021-01-15 12:00:00")
     if result:
         print("Результат работы программы:")
         print(result)

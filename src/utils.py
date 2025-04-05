@@ -57,18 +57,18 @@ def get_cards(transactions: pd.DataFrame) -> list:
             continue  # Пропускаем некорректные номера
 
         last_4_digits = card_number[-4:]
-
+        amount = abs(row["Сумма операции"])
         # Обновляем данные карты
         if last_4_digits not in card_data:
             card_data[last_4_digits] = {"total_spent": 0.0, "cashback": 0}
 
-        card_data[last_4_digits]["total_spent"] += row["Сумма операции"]
-        card_data[last_4_digits]["cashback"] += row["Сумма операции"] // 100
+        card_data[last_4_digits]["total_spent"] += amount
+        card_data[last_4_digits]["cashback"] += amount // 100
 
     # Формируем результат
     result = [
-        {"last_digits": last_4, "total_spent": round(card_info["total_spent"], 2), "cashback": card_info["cashback"]}
-        for last_4, card_info in card_data.items()
+        {"last_digits": last_4, "total_spent": round(info["total_spent"], 2), "cashback": int(info["cashback"])}
+        for last_4, info in card_data.items()
     ]
 
     return result
