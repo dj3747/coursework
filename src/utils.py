@@ -37,35 +37,40 @@ def get_data_frame_from_excel_file(excel_file_path: str) -> dict:
         return {}
 
 
-def get_cards(transaction: pd.DataFrame) -> list:
+def get_cards(transactions: pd.DataFrame) -> list:
     """
-    Функция анализирует список транзакций и возвращает информацию по каждой карте:
+    Анализирует список транзакций и возвращает информацию по каждой карте:
     - последние 4 цифры номера карты;
     - общая сумма расходов;
     - кешбэк (1 рубль на каждые 100 рублей).
     """
     card_data = {}
-    for _, row in transaction.iterrows():
-        card_number = row["Номер карты"]
-        if row["Статус"] == "OK" and row["Сумма операции"] < 0:
-            card_number = str(card_number).replace(" ", "")
-            last_4_digits = card_number[-4:]
 
-            if card_number not in card_data:
-                card_data[card_number] = {"last_4_digits": last_4_digits, "total_spent": 0, "cashback": 0}
-                card_data[card_number]["total_spent"] += row["Сумма операции"]
-                card_data[card_number]["cashback"] += row["Сумма операции"] // 100
+    for _, row in transactions.iterrows():
+        # Пропускаем неуспешные транзакции и некорректные данные
+        if row["Статус"] != "OK" or pd.isna(row["Номер карты"]):
+            continue
 
-    result = []
-    for card_number, card_info in card_data.items():
-        result.append(
-            {
-                "last_digits": card_info["last_4_digits"],
-                "total_spent": round(card_info["total_spent"], 2),
-                "cashback": round(card_info["cashback"], 2),
-            }
-        )
-    print(f"Карты обработаны: {result}")
+        # Обработка номера карты
+        card_number = str(row["Номер карты"]).strip().replace("*", "").replace(" ", "")
+        if len(card_number) < 4:
+            continue  # Пропускаем некорректные номера
+
+        last_4_digits = card_number[-4:]
+
+        # Обновляем данные карты
+        if last_4_digits not in card_data:
+            card_data[last_4_digits] = {"total_spent": 0.0, "cashback": 0}
+
+        card_data[last_4_digits]["total_spent"] += row["Сумма операции"]
+        card_data[last_4_digits]["cashback"] += row["Сумма операции"] // 100
+
+    # Формируем результат
+    result = [
+        {"last_digits": last_4, "total_spent": round(card_info["total_spent"], 2), "cashback": card_info["cashback"]}
+        for last_4, card_info in card_data.items()
+    ]
+
     return result
 
 
@@ -115,37 +120,49 @@ def get_currency_rates(user_setting_path: str) -> list:
 
 
 def get_stock_prices(user_settings_path: str) -> dict:
-    """Функция стоимость для акций, указанных в файле настроек пользователя"""
-    with open(user_settings_path, "r") as f:
-        user_settings = json.load(f)
+    """Получает цены акций через Marketstack API."""
+    try:
+        with open(user_settings_path, "r") as f:
+            user_settings = json.load(f)
+    except Exception as e:
+        logging.error(f"Ошибка загрузки настроек: {e}")
+        return {"stock_prices": []}
 
     stocks = user_settings.get("user_stocks", ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"])
-    api_key = os.getenv("API_STOCK")
+    api_key = os.environ.get("API_STOCK")
 
     if not api_key:
-        print("Ошибка: API ключ не найден. Убедитесь, что он задан в переменной окружения.")
+        logging.error("Ключ API_STOCK не найден.")
         return {"stock_prices": []}
+
     stock_prices = []
     for stock in stocks:
-        url = f"https://eodhd.com/api/real-time/{stock}.US?api_token={api_key}&fmt=json"
-        response = requests.get(url)
+        # Формируем URL для одной акции
+        url = f"https://api.marketstack.com/v1/eod?access_key={api_key}&symbols={stock}"
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
 
-        # Логирование ответа
-        print(f"Ответ от API для {stock}: {response.json()}")
+            # Проверяем структуру ответа
+            if "data" not in data or not isinstance(data["data"], list):
+                logging.warning(f"Некорректный ответ для {stock}: {data}")
+                continue
 
-        if response.status_code != 200:
-            print(f"Ошибка запроса: статус {response.status_code} для {stock}")
+            if len(data["data"]) == 0:
+                logging.info(f"Нет данных для {stock}.")
+                continue
 
-        response_data = response.json()
+            latest_data = data["data"][0]
+            stock_prices.append(
+                {
+                    "stock": stock,
+                    "price": latest_data.get("adj_close", latest_data.get("close")),
+                    "date": latest_data.get("date"),
+                }
+            )
 
-        if response_data.get("code") != f"{stock}.US":
-            print(f"Ошибка: не удалось получить данные для {stock}")
-            continue
-
-        stock_info = {
-            "stock": stock,
-            "price": response_data.get("close"),
-        }
-        stock_prices.append(stock_info)
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Ошибка запроса для {stock}: {str(e)}")
 
     return {"stock_prices": stock_prices}

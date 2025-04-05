@@ -1,11 +1,16 @@
 import json
 import logging
+import os
+import sys
 from datetime import datetime
 
 import pandas as pd
 
-from config import excel_file_path, user_settings_path
+from ..config import excel_file_path, user_settings_path
 from src.utils import get_cards, get_currency_rates, get_stock_prices, get_top_transaction, greet
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 # Настроить логирование
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -20,7 +25,7 @@ def handle_request(date_time_str: str):
     """Обработка запроса веб-страницы"""
     try:
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
-        logging.info("Начало выполнения программы с датой и временем: {date_time}")
+        logging.info(f"Начало выполнения программы с датой и временем: {date_time}")
     except ValueError as e:
         logging.error(f"Неправильный формат даты и времени: {e}")
         return
@@ -37,7 +42,7 @@ def handle_request(date_time_str: str):
 
     # Фильтровать операции по дате, устанавливая дату на первое число месяца и сбрасывая время на полночь
     start_date = date_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    filter_transactions = filter_transactions_by_date(transactions, start_date, date_time)
+    filter_transactions = filter_transactions_by_date(transactions, start_date, date_time_str)
 
     # Загрузить данные из JSON файла
     logging.info("Загрузка данных из файла: %s", user_settings_path)
@@ -54,4 +59,15 @@ def handle_request(date_time_str: str):
     logging.info("Результаты: %s", json.dumps(result, indent=4, ensure_ascii=False))
 
     result_json = json.dumps(result, indent=4, ensure_ascii=False)
+
     return result_json
+
+
+print(f"Путь к Excel: {excel_file_path}")
+print(f"Путь к настройкам: {user_settings_path}")
+if __name__ == "__main__":
+    # Пример вызова функции и вывода результата
+    result = handle_request("2024-01-15 12:00:00")
+    if result:
+        print("Результат работы программы:")
+        print(result)
