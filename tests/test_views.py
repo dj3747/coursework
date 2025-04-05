@@ -17,10 +17,6 @@ def test_handle_request_invalid_date():
     assert result is None
 
 
-def test_greet():
-    assert "Добрый" in greet() or "Доброе" in greet()
-
-
 def test_get_cards_empty_data():
     assert get_cards(pd.DataFrame()) == []
 

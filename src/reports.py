@@ -1,7 +1,7 @@
 import json
 import logging
 import os.path
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import wraps
 from typing import Any, Optional
 
@@ -45,7 +45,7 @@ def log_report_to_file(filename: Optional[str] = None):
 
 
 @log_report_to_file("../data/spending_by_category_report.json")  # Можно передать имя файла
-def spending_by_category(transactions: pd.DataFrame, category: str, start_date: str, end_date: str) -> dict:
+def spending_by_category(transactions: pd.DataFrame, category, start_date, end_date):
     """Функция для получения трат по категориям за заданный период"""
     # Создаем копию DataFrame для безопасной модификации
     df = transactions.copy()
@@ -54,11 +54,9 @@ def spending_by_category(transactions: pd.DataFrame, category: str, start_date: 
     end_date = pd.to_datetime(end_date)
 
     # Фильтруем транзакции по категории и дате
-    mask = ((df["Категория"] == category) &
-            (df["Дата операции"] >= start_date) &
-            (df["Дата операции"] <= end_date))
+    mask = (df["Дата операции"] >= start_date) & (df["Дата операции"] <= end_date) & (df["Категория"] == category)
 
-    filtered_transactions = df.loc[mask]
+    filtered_transactions = df.loc[mask].copy()
 
     # Возвращаем сумму трат по категориям
     total_spending = float(filtered_transactions["Сумма операции"].sum())
