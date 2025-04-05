@@ -10,7 +10,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import excel_file_path, user_settings_path
 from src.utils import get_cards, get_currency_rates, get_stock_prices, get_top_transaction, greet
 
-
 # Настроить логирование
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
