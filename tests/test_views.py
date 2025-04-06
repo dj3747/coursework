@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from src.views import filter_transactions_by_date, get_cards, get_stock_prices, greet, handle_request
+from src.views import filter_transactions_by_date, get_cards, get_stock_prices, handle_request
 
 
 def test_filter_transactions_by_date():

@@ -26,16 +26,16 @@ def parse_date(date_str: Optional[str]) -> Optional[datetime]:
 
 def filter_transactions_by_date(transactions: List[Dict[str, Any]], year: int, month: int) -> List[Dict[str, Any]]:
     """Фильтрации транзакций по году и месяцу"""
-    return list(
-        filter(
-            lambda record: record["Дата операции"]
-            and isinstance(record["Дата операции"], datetime)
+    return [
+        record
+        for record in transactions
+        if (
+            isinstance(record["Дата операции"], datetime)
             and record["Дата операции"].year == year
             and record["Дата операции"].month == month
-            and record["Сумма операции"] < 0,
-            transactions,
+            and record["Сумма операции"] < 0
         )
-    )
+    ]
 
 
 def calculate_cashback_by_category(filtered_transactions: List[Dict[str, Any]]) -> Dict[str, float]:
