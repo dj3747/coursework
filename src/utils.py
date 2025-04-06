@@ -106,7 +106,9 @@ def get_currency_rates(user_setting_path: str) -> list:
 
         for currency in currencies:
             url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/{currency}"
+
             response = requests.get(url)
+
             data = response.json()
 
             # Логирование ответа
