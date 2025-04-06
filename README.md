@@ -15,6 +15,7 @@
   `poetry add --ggroup lint (flake8, black, mypy, isort)`
 - создаём при необходимости в корне проекта файлы:`.flake8, mypy, config.py`
 - устанавливаем библиотеку `pandas`- `poetry add pandas`
+- добавляем библиотеку для работы с файлами Excel: `poetry add openpyxl` 
 - для генерации отчётов о покрытии тестов в HTML-формате добавляем:
   `pytest --cov=src --cov-report=html`
 
