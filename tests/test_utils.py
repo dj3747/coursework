@@ -7,14 +7,12 @@ import pandas as pd
 import pytest
 import requests
 
-from src.utils import (
-    get_cards,
-    get_currency_rates,
-    get_data_frame_from_excel_file,
-    get_stock_prices,
-    get_top_transaction,
-    greet,
-)
+from src.utils import (get_cards,
+                       get_currency_rates,
+                       get_data_frame_from_excel_file,
+                       get_stock_prices,
+                       get_top_transaction,
+                       greet)
 
 logging.basicConfig(level=logging.INFO)
 
