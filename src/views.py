@@ -21,6 +21,9 @@ def filter_transactions_by_date(transactions, start_date, end_date):
 
 def handle_request(date_time_str: str):
     """Обработка запроса веб-страницы"""
+    if date_time_str is None:
+        logging.error("Получена None дата и время")
+        return
     try:
         date_time = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
         logging.info(f"Начало выполнения программы с датой и временем: {date_time}")
